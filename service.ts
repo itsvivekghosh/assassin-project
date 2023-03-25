@@ -1,46 +1,41 @@
-const express = require("express");
-const path = require("path");
+require("dotenv").config();
+require("./src/configs/db.config");
+import express, { NextFunction, Request, Response } from "express";
+import bodyParser from "body-parser";
+
 const cookieParser = require("cookie-parser");
-const mongoose = require("mongoose");
-const logger = require("morgan");
+const fetchVideosAndSaveInDatabase = require("./src/configs/cronjob.config");
 
 // Importing the http module
-const http = require("http");
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
-const MONGODB_PORT = '27017'
-const MONGODB_URI = '0.0.0.0'
-const MONGODB_DATABASE_NAME = 'fampay-assignment'
+const HTTP_PORT = process.env.HTTP_PORT;
 
-mongoose
-  .connect(`mongodb://${MONGODB_URI}:${MONGODB_PORT}/${MONGODB_DATABASE_NAME}`, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log(`Connected to MongoDB Server at Port: ${MONGODB_PORT}`)
-  })
-  .catch((err: any) => {
-    if (err) {
-      console.log(`Failed to connect to MongoDB: ${err}`);
-    }
-  });
+app.use(
+  "/",
+  async (_: Request, res: Response, next: NextFunction) => {
+    next();
+  },
+  require("./src/routers/index.router")
+);
 
-// Creating server
-const server = http.createServer((req: any, res: any) => {
-	// Sending the response
-	res.write("This is the response from the server")
-	res.end();
-})
+app.use(
+  "/video",
+  async (_: Request, res: Response, next: NextFunction) => {
+    next();
+  },
+  require("./src/routers/video.router")
+);
 
 // Server listening to port 3000
-server.listen((3000), () => {
-	console.log("Server is Running");
-})
+app.listen(HTTP_PORT, () => {
+  console.log(`Server is Running on PORT: ${HTTP_PORT}.`);
+});
+
+fetchVideosAndSaveInDatabase();
 
 module.exports = app;
