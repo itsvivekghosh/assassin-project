@@ -1,6 +1,6 @@
 {
   "name": "assassin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "service.ts",
   "scripts": {
@@ -11,8 +11,9 @@
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
-    "mongoose": "^7.0.3",
     "morgan": "^1.10.0",
+    "mysql": "^2.18.1",
+    "node-fetch": "^3.3.1",
     "path": "^0.12.7"
   },
   "devDependencies": {
@@ -20,6 +21,9 @@
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.9",
     "@typescript-eslint/parser": "^5.56.0",
+    "async": "^3.2.4",
+    "dotenv": "^16.0.3",
+    "node-cron": "^3.0.2",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
