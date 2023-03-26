@@ -13,58 +13,88 @@ export class VideoQueries {
         data
       );
     } catch (error: any) {
-      console.error(
-        `Error while inserting the MySQL Database: ${JSON.stringify(
-          error?.message
-        )}`
-      );
+      const errorMessage = `Error while inserting data in the MySQL Database: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
     }
   };
-  static output: any[];
 
-  static setOutput = (rows: any) => {
-    this.output = rows;
-    // console.log(this.output);
-  };
-
-  public static VideoModelGetByAnyKeyInDescOrderQuery = async (
+  public static getVideosByAnyKeyQueryResponse = async (
+    pageNumber: number,
+    pageSize: number,
     sortByOrder: string,
-    callback: any
+    sortByKey: string
   ) => {
-    try {
-      var query = await dbConn.query(
-        `SELECT * FROM ${this.MYSQL_DATABASE_NAME}.${this.MYSQL_TABLE_NAME}`,
-        (err: any, rows: any) => {
-          this.setOutput(rows);
-        }
-      );
-      return this.output;
-    } catch (error: any) {
-      console.error(
-        `Error while inserting the MySQL Database: ${JSON.stringify(
+    return new Promise(async (resolve, reject) => {
+      try {
+        let SQL_QUERY = `SELECT * FROM ${this.MYSQL_DATABASE_NAME}.${
+          this.MYSQL_TABLE_NAME
+        } as v INNER JOIN (SELECT id FROM ${this.MYSQL_DATABASE_NAME}.${
+          this.MYSQL_TABLE_NAME
+        } LIMIT ${
+          (pageNumber - 1) * pageSize
+        }, ${pageSize}) as v2 ON v.id = v2.id ORDER BY v.${sortByKey} ${sortByOrder};`;
+        await dbConn.query(SQL_QUERY, (err: any, rows: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(rows);
+          }
+        });
+      } catch (error: any) {
+        const errorMessage = `Error while fetching data from the MySQL Database: ${JSON.stringify(
           error?.message
-        )}`
-      );
-    }
+        )}`;
+        console.error(errorMessage);
+        return {
+          status: "error",
+          message: errorMessage,
+        };
+      }
+    });
   };
   public static VideoModelGetByTitleOrDescriptionQuery = async (
     searchString: String,
-    callback: any
+    pageNumber: number,
+    pageSize: number,
+    sortByOrder: string,
+    sortByKey: string
   ) => {
-    try {
-      const SQL_QUERY = `SELECT * FROM  ${this.MYSQL_DATABASE_NAME}.${this.MYSQL_TABLE_NAME} WHERE (title LIKE '%${searchString}%') OR (description LIKE '%${searchString}%')`;
+    return new Promise(async (resolve, reject) => {
+      try {
+        const SQL_QUERY = `SELECT * from ${this.MYSQL_DATABASE_NAME}.${
+          this.MYSQL_TABLE_NAME
+        } as v3 INNER JOIN (SELECT v.id FROM ${this.MYSQL_DATABASE_NAME}.${
+          this.MYSQL_TABLE_NAME
+        } as v INNER JOIN (SELECT id from ${this.MYSQL_DATABASE_NAME}.${
+          this.MYSQL_TABLE_NAME
+        } WHERE (title LIKE '%${searchString}%') OR (description LIKE '%${searchString}%')) as v2 ON v.id = v2.id ORDER BY v.id desc LIMIT ${
+          (pageNumber - 1) * pageSize
+        }, ${pageSize}) as v4 WHERE v4.id = v3.id ORDER BY v3.${sortByKey} ${sortByOrder};`;
 
-      var query = await dbConn.query(SQL_QUERY, (err: any, rows: any) => {
-        this.setOutput(rows);
-      });
-      return this.output;
-    } catch (error: any) {
-      console.error(
-        `Error while inserting the MySQL Database: ${JSON.stringify(
+        await dbConn.query(SQL_QUERY, (err: any, rows: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(rows);
+          }
+        });
+      } catch (error: any) {
+        const errorMessage = `Error while fetching data from the MySQL Database: ${JSON.stringify(
           error?.message
-        )}`
-      );
-    }
+        )}`;
+        console.error(errorMessage);
+        return {
+          status: "error",
+          message: errorMessage,
+        };
+      }
+    });
   };
 }
 
