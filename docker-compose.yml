@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  mysqldb:
+    image: mysql
+    restart: always
+    env_file: ./.env
+    environment:
+      MYSQL_DATABASE_NAME: $MYSQL_DATABASE_NAME
+      MYSQL_TABLE_NAME: $MYSQL_TABLE_NAME
+      GOOGLE_API_KEY: $GOOGLE_API_KEY
+      YOUTUBE_API_URL: $YOUTUBE_API_URL
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    depends_on:
+      - mysqldb
+    build: .
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $HTTP_PORT:$HTTP_PORT
+    environment:
+      - DB_HOST=mysqldb
+      - DB_USER=$MYSQL_USERNAME
+      - DB_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - DB_NAME=$MYSQL_DATABASE_NAME
+      - DB_PORT=$MYSQL_PORT
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
