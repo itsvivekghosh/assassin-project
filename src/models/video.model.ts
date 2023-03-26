@@ -73,7 +73,7 @@ export class VideoQueries {
           this.MYSQL_TABLE_NAME
         } as v INNER JOIN (SELECT id from ${this.MYSQL_DATABASE_NAME}.${
           this.MYSQL_TABLE_NAME
-        } WHERE (title LIKE '%${searchString}%') OR (description LIKE '%${searchString}%')) as v2 ON v.id = v2.id ORDER BY v.id desc LIMIT ${
+        } WHERE MATCH(description, title) AGAINST("${searchString}" IN NATURAL LANGUAGE MODE)) as v2 ON v.id = v2.id ORDER BY v.id desc LIMIT ${
           (pageNumber - 1) * pageSize
         }, ${pageSize}) as v4 WHERE v4.id = v3.id ORDER BY v3.${sortByKey} ${sortByOrder};`;
 

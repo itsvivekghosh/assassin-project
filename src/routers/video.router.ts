@@ -18,7 +18,7 @@ videoRouter.get("/", async (req: any, res: any) => {
       error?.message
     )}`;
     console.error(errorMessage);
-    res.sendStatus(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
       status: "error",
       message: errorMessage,
     });
@@ -38,7 +38,7 @@ videoRouter.get("/getAllVideos", async (req: any, res: any) => {
       error?.message
     )}`;
     console.error(errorMessage);
-    res.sendStatus(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
       status: "error",
       message: errorMessage,
     });
@@ -62,7 +62,7 @@ videoRouter.get("/getByTitleOrDescription", async (req: any, res: any) => {
       error?.message
     )}`;
     console.error(errorMessage);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({
       status: "error",
       message: errorMessage,
     });
