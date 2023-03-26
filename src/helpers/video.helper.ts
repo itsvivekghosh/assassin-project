@@ -1,5 +1,5 @@
 require("dotenv").config();
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const VideoQueries = require("../models/video.model");
 
@@ -50,8 +50,29 @@ class VideoHelper {
       if (pageSize && pageSize > Number(process.env.MAX_FETCH_RESULTS)) {
         this.maxResults = Number(pageSize);
       }
-      const GOOGLE_API_URL = `${this.apiUrl}/search?key=${this.apiKey}&type=video&part=snippet&maxResults=${this.maxResults}&q=${searchQuery}`;
-      let response: any = await axios(GOOGLE_API_URL);
+
+      let response: any;
+      if (this.apiKey) {
+        for (const apiKey of this.apiKey?.split(",")) {
+          const GOOGLE_API_URL = `${this.apiUrl}/search?key=${apiKey}&type=video&part=snippet&maxResults=${this.maxResults}&q=${searchQuery}`;
+
+          response = await axios(GOOGLE_API_URL).catch(
+            (reason: AxiosError<any>) => {
+              if (reason.response!.status === 400) {
+                // Handle 400
+                console.error(
+                  `Getting Error while using the API_KEY: ${apiKey}, STATUS: ${
+                    reason.response!.status
+                  }, ERROR: ${reason?.message}`
+                );
+              }
+            }
+          );
+          if (response?.status === 200) {
+            break;
+          }
+        }
+      }
 
       let result: any[] = [];
       response?.data?.items?.map((item: any) => {
