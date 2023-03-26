@@ -6,35 +6,77 @@ const VideoQueries = require("../models/video.model");
 class VideoHelper {
   static apiKey = process.env.GOOGLE_API_KEY;
   static apiUrl = process.env.YOUTUBE_API_URL;
+  static maxResults = Number(process.env.MAX_FETCH_RESULTS);
 
   static removeSpecials(str: any) {
-    let lower = str.toLowerCase();
-    let upper = str.toUpperCase();
+    try {
+      let lower = str.toLowerCase();
+      let upper = str.toUpperCase();
 
-    let res = "" as String,
-      i = 0,
-      n = lower.length,
-      t;
-    for (i; i < n; ++i) {
-      if (lower[i] !== upper[i] || lower[i].trim() === "") {
-        t = str[i];
-        if (t !== undefined) {
-          res += t;
+      let res = "" as String,
+        position = 0,
+        length = lower.length,
+        tempString;
+      for (; position < length; ++position) {
+        if (
+          lower[position] !== upper[position] ||
+          lower[position].trim() === ""
+        ) {
+          tempString = str[position];
+          if (tempString !== undefined) {
+            res += tempString;
+          }
         }
       }
+
+      return new String(res);
+    } catch (error: any) {
+      const errorMessage = `Error while removing special characters: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
     }
-    return new String(res);
   }
 
-  public static async getVideoListFromYoutubeV3API(searchQuery: string) {
+  public static async getVideoListFromYoutubeV3API(
+    searchQuery: string,
+    pageSize: number
+  ) {
     try {
-      const url = `${this.apiUrl}/search?key=${this.apiKey}&type=video&part=snippet&maxResults=1&q=${searchQuery}`;
-      let response: any = await axios(url);
-      return response?.data?.items;
+      if (pageSize && pageSize > Number(process.env.MAX_FETCH_RESULTS)) {
+        this.maxResults = Number(pageSize);
+      }
+      const GOOGLE_API_URL = `${this.apiUrl}/search?key=${this.apiKey}&type=video&part=snippet&maxResults=${this.maxResults}&q=${searchQuery}`;
+      let response: any = await axios(GOOGLE_API_URL);
+
+      let result: any[] = [];
+      response?.data?.items?.map((item: any) => {
+        result.push({
+          title: item?.snippet?.title,
+          channelId: item?.snippet?.channelId,
+          channelTitle: item?.snippet?.channelTitle,
+          videoId: item?.id?.videoId,
+          description: item?.snippet?.description,
+          publishedAt: item?.snippet?.publishedAt,
+          publishTime: item?.snippet?.publishTime,
+          thumbnails: item?.snippet?.thumbnails,
+        });
+      });
+
+      return result;
     } catch (err: any) {
-      console.error(
-        `Error while fetching yt details: ${JSON.stringify(err?.message)}`
-      );
+      const errorMessage = `Error while fetching youtube video details: ${JSON.stringify(
+        err?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
     }
   }
 
@@ -42,39 +84,67 @@ class VideoHelper {
     response: any,
     sortByOrder: string
   ) {
-    await response?.sort((a: any, b: any) => {
-      return sortByOrder === "desc"
-        ? Date.parse(b?.snippet?.["publishTime"]) -
-            Date.parse(a?.snippet?.["publishTime"])
-        : Date.parse(a?.snippet?.["publishTime"]) -
-            Date.parse(b?.snippet?.["publishTime"]);
-    });
-    return response;
+    try {
+      await response?.sort((a: any, b: any) => {
+        return sortByOrder === "desc"
+          ? Date.parse(b?.["publishTime"]) - Date.parse(a?.["publishTime"])
+          : Date.parse(a?.["publishTime"]) - Date.parse(b?.["publishTime"]);
+      });
+
+      return response;
+    } catch (err: any) {
+      const errorMessage = `Error while sorting as per publish time details: ${JSON.stringify(
+        err?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
+    }
   }
 
   public static async setYoutubeVideoResponseInDatabase(response: any) {
-    let listData: any[] = [];
+    try {
+      let listData: any[] = [];
 
-    response?.map(async (data: any) => {
-      let object = {
-        title: this.removeSpecials(data?.["snippet"]?.["title"]),
-        channelId: data?.["snippet"]?.["channelId"],
-        channelTitle: data?.["snippet"]?.["channelTitle"],
-        videoId: data?.["id"]?.["videoId"],
-        description: data?.["snippet"]?.["description"],
-        publishedAt: data?.["snippet"]?.["publishedAt"],
-        thumbnails: JSON.stringify(data?.["snippet"]?.["thumbnails"]),
-        publishTime: data?.["snippet"]?.["publishTime"],
+      response?.map(async (data: any) => {
+        let object = {
+          title: this.removeSpecials(data?.["title"]),
+          channelId: data?.["channelId"],
+          channelTitle: data?.["channelTitle"],
+          videoId: data?.["videoId"],
+          description: data?.["description"],
+          publishedAt: data?.["publishedAt"],
+          thumbnails: JSON.stringify(data?.["thumbnails"]),
+          publishTime: data?.["publishTime"],
+        };
+        listData.push(object);
+      });
+
+      let resp = await VideoHelper.saveDataInDatabase(listData);
+
+      if (resp?.status === "success")
+        return {
+          status: "success",
+          message: "Data saved in DB!",
+        };
+      else {
+        return {
+          status: "error",
+          message: "Error while saving the data in DB!",
+        };
+      }
+    } catch (err: any) {
+      const errorMessage = `Error while saving the data in DB!, Cause: ${JSON.stringify(
+        err?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
       };
-      listData.push(object);
-    });
-
-    await VideoHelper.saveDataInDatabase(listData);
-
-    return {
-      status: 200,
-      message: "success",
-    };
+    }
   }
 
   static async saveDataInDatabase(VideoObjectList: any[]) {
@@ -83,11 +153,18 @@ class VideoHelper {
         await VideoQueries.VideoModelCreateQuery(VideoObject);
       });
 
-      return null;
-    } catch (error: any) {
       return {
-        status: 400,
-        message: "error while saving schema",
+        status: "success",
+        message: "Data saved in DB!",
+      };
+    } catch (error: any) {
+      const errorMessage = `ERROR while Saving the schema, Cause: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
       };
     }
   }
@@ -110,57 +187,60 @@ class VideoHelper {
     pageSize: number
   ) => {
     try {
-      let response = await VideoQueries.VideoModelGetByAnyKeyInDescOrderQuery(
-        sortByOrder
-      );
-      await this.sortVideosByAnyKeyInDescOrder(
-        response,
+      let response = await VideoQueries.getVideosByAnyKeyQueryResponse(
+        pageNumber,
+        pageSize,
         sortByOrder,
         sortByKey
       );
-      response = this.paginateArrayByPageSizeAndNumber(
-        response,
-        pageSize,
-        pageNumber
-      );
-      return response;
-    } catch (error: any) {}
-  };
 
-  static sortVideosByAnyKeyInDescOrder = async (
-    response: any[],
-    sortOrder: string = "desc",
-    sortByKey: string
-  ) => {
-    try {
-      response?.sort((a, b) => {
-        return sortOrder === "desc"
-          ? Date.parse(b?.[sortByKey]) - Date.parse(a?.[sortByKey])
-          : Date.parse(a?.[sortByKey]) - Date.parse(b?.[sortByKey]);
-      });
-      response?.map((data) => {
+      response?.map((data: any) => {
         data.thumbnails = JSON.parse(data?.thumbnails);
+        // delete data?.created_at;
       });
+
       return response;
-    } catch (error: any) {}
+    } catch (error: any) {
+      const errorMessage = `ERROR while getting the response from YT API, Cause: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
+    }
   };
 
   public static getAllVideosByTitleOrDescription = async (
     searchString: String,
     pageNumber: number,
-    pageSize: number
+    pageSize: number,
+    sortByOrder: string,
+    sortByKey: string
   ) => {
     try {
       let response = await VideoQueries.VideoModelGetByTitleOrDescriptionQuery(
-        searchString
-      );
-      response = this.paginateArrayByPageSizeAndNumber(
-        response,
+        searchString,
+        pageNumber,
         pageSize,
-        pageNumber
+        sortByOrder,
+        sortByKey
       );
+      response?.map((data: any) => {
+        data.thumbnails = JSON.parse(data?.thumbnails);
+      });
       return response;
-    } catch (error: any) {}
+    } catch (error: any) {
+      const errorMessage = `ERROR while getting the response from DB, Cause: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
+    }
   };
 }
 

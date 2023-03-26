@@ -33,7 +33,7 @@ app.use(
 
 // Server listening to port 3000
 app.listen(HTTP_PORT, () => {
-  console.log(`Server is Running on PORT: ${HTTP_PORT}.`);
+  console.log(`Assassin\'s Server is Running on PORT: ${HTTP_PORT}.`);
 });
 
 fetchVideosAndSaveInDatabase();
