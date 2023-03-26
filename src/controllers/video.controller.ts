@@ -5,8 +5,22 @@ const videoHelper = require("../helpers/video.helper");
 class VideoController {
   public static async getVideoResponse(request?: Request, _?: Response) {
     const searchParams = request?.query?.q || process.env.DEFAULT_SEARCH_VALUE;
+    const sortByOrder = request?.query?.sortByOrder || "desc";
+    const pageNumber = request?.query?.pageNumber || 1;
+    const pageSize = request?.query?.pageSize || process.env.DEFAULT_PAGE_SIZE;
 
     let resp = await videoHelper.getVideoListFromYoutubeV3API(searchParams);
+
+    resp = videoHelper.paginateArrayByPageSizeAndNumber(
+      resp,
+      pageSize,
+      pageNumber
+    );
+
+    resp = await videoHelper.getSortedResponseforYoutubeV3APIResponse(
+      resp,
+      sortByOrder
+    );
 
     await videoHelper.setYoutubeVideoResponseInDatabase(resp);
 
