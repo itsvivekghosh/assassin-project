@@ -79,9 +79,6 @@ export class VideoQueries {
   ) => {
     return new Promise(async (resolve, reject) => {
       try {
-        await dbConn.query(
-          `ALTER TABLE ${this.MYSQL_DATABASE_NAME}.${this.MYSQL_TABLE_NAME} ADD FULLTEXT INDEX title_desc_index (title, description);`
-        );
         const SQL_QUERY = `SELECT * from ${this.MYSQL_DATABASE_NAME}.${
           this.MYSQL_TABLE_NAME
         } as v3 INNER JOIN (SELECT v.id FROM ${this.MYSQL_DATABASE_NAME}.${
