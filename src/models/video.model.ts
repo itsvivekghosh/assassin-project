@@ -47,7 +47,7 @@ export class VideoQueries {
         }, ${pageSize}) as v2 ON v.id = v2.id ORDER BY v.${sortByKey} ${sortByOrder};`;
         await dbConn.query(SQL_QUERY, (err: any, rows: any) => {
           if (err) {
-            reject(err);
+            reject({ status: "error", data: err });
           } else {
             resolve(rows);
           }

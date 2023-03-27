@@ -58,10 +58,14 @@ class VideoController {
     // Appending the response in Database
     await videoHelper.setYoutubeVideoResponseInDatabase(resp);
 
-    return {
-      status: "success",
-      data: resp,
-    };
+    if (resp?.status !== "success") {
+      return {
+        status: "success",
+        data: resp,
+      };
+    } else {
+      return resp;
+    }
   }
 
   /*
@@ -100,14 +104,7 @@ class VideoController {
       pageSize
     );
 
-    if (resp?.status === "success") {
-      return {
-        status: "success",
-        data: resp,
-      };
-    } else {
-      return resp;
-    }
+    return resp;
   }
 
   /*
@@ -149,10 +146,7 @@ class VideoController {
       sortByKey
     );
 
-    return {
-      status: "success",
-      data: resp,
-    };
+    return resp;
   }
 }
 

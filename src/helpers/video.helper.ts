@@ -29,11 +29,14 @@ class VideoHelper {
             (reason: AxiosError<any>) => {
               if (reason.response!.status === 400) {
                 // Handle 400
-                console.error(
-                  `Getting Error while using the API_KEY: ${apiKey}, STATUS: ${
-                    reason.response!.status
-                  }, ERROR: ${reason?.message}`
-                );
+                const errorMessage = `Getting Error while using the API_KEY: ${apiKey}, STATUS: ${
+                  reason.response!.status
+                }, ERROR: ${reason?.message}`;
+                console.error(errorMessage);
+                return {
+                  status: "error",
+                  message: errorMessage,
+                };
               }
             }
           );
@@ -44,6 +47,10 @@ class VideoHelper {
       } else {
         const errorMessage = `No API Keys, Please provide a valid GOOGLE_API_KEY`;
         console.error(errorMessage);
+        return {
+          status: "error",
+          message: errorMessage,
+        };
       }
 
       let result: any[] = [];
@@ -60,7 +67,10 @@ class VideoHelper {
         });
       });
 
-      return result;
+      return {
+        status: "success",
+        data: result,
+      };
     } catch (err: any) {
       const errorMessage = `Error while fetching youtube video details: ${JSON.stringify(
         err?.message
@@ -81,7 +91,7 @@ class VideoHelper {
     sortByOrder: string
   ) {
     try {
-      await response?.sort((a: any, b: any) => {
+      await response?.data?.sort((a: any, b: any) => {
         return sortByOrder === "desc"
           ? Date.parse(b?.["publishTime"]) - Date.parse(a?.["publishTime"])
           : Date.parse(a?.["publishTime"]) - Date.parse(b?.["publishTime"]);
@@ -107,7 +117,7 @@ class VideoHelper {
     try {
       let listData: any[] = [];
 
-      response?.map(async (data: any) => {
+      response?.data?.map(async (data: any) => {
         let object = {
           title: this.removeSpecials(data?.["title"]),
           channelId: data?.["channelId"],
@@ -172,14 +182,16 @@ class VideoHelper {
   }
 
   public static paginateArrayByPageSizeAndNumber = (
-    response: any[],
+    response: any,
     page_size: number = 10,
     page_number: number
   ) => {
-    return response?.slice(
+    response.data = response?.data?.slice(
       (page_number - 1) * page_size,
       page_number * page_size
     );
+
+    return response;
   };
 
   /*
@@ -236,12 +248,19 @@ class VideoHelper {
         sortByKey
       );
 
-      response?.map((data: any) => {
-        data.thumbnails = JSON.parse(data?.thumbnails);
-        // delete data?.created_at;
-      });
+      if (response?.status !== "error") {
+        response?.map((data: any) => {
+          data.thumbnails = JSON.parse(data?.thumbnails);
+          // delete data?.created_at;
+        });
 
-      return response;
+        return {
+          status: "success",
+          data: response,
+        };
+      } else {
+        return response;
+      }
     } catch (error: any) {
       const errorMessage = `ERROR while getting the response from YT API, Cause: ${JSON.stringify(
         error?.message
@@ -275,7 +294,10 @@ class VideoHelper {
       response?.map((data: any) => {
         data.thumbnails = JSON.parse(data?.thumbnails);
       });
-      return response;
+      return {
+        status: "success",
+        data: response,
+      };
     } catch (error: any) {
       const errorMessage = `ERROR while getting the response from DB, Cause: ${JSON.stringify(
         error?.message
