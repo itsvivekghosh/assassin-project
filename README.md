@@ -20,19 +20,25 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 git clone https://github.com/itsvivekghosh/assassin-project.git
 ```
 
-2. Copy your API_KEY to .env file in `GOOGLE_API_KEY` variable. This can be comma seperated values such as (IMPORTANT):
+2. Install all the dependencies by using command:
+
+```
+npm i
+```
+
+3. Copy your API_KEY to .env file in `GOOGLE_API_KEY` variable. This can be comma seperated values such as (IMPORTANT):
 
 ```
 GOOGLE_API_KEY="<GOOGLE_API_KEY1>,<GOOGLE_API_KEY2>"
 ```
 
-3. Run command
+4. Run command
 
 ```
 docker-compose up
 ```
 
-4. Create the database using the command in MySQL Command Line:
+5. If you're running application locally by `npm start` then, make sure to create the database and fire the commands in MySQL Command Line:
 
 ```
 -- CREATE DATABASE
@@ -58,8 +64,6 @@ ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`description`);
 ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`title`);
 ALTER TABLE fampay_assignment.videos ADD FULLTEXT INDEX title_desc_index (`title`, `description`);
 ```
-
-5. Install all the dependencies by `npm i` and start the application by: `npm start`.
 
 6. Adding the postman collection in `src/postman_collection.json`. Please import to use the APIs.
 
