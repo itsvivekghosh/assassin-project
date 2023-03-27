@@ -53,8 +53,10 @@ CREATE TABLE IF NOT EXISTS fampay_assignment.videos (
 	PRIMARY KEY (`id`))
 ENGINE=InnoDB;
 
+-- Alter Table Index to FULLTEXT INDEX
 ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`description`);
 ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`title`);
+ALTER TABLE fampay_assignment.videos ADD FULLTEXT INDEX title_desc_index (`title`, `description`);
 ```
 
 5. Install all the dependencies by `npm i` and start the application by: `npm start`.
