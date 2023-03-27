@@ -15,6 +15,7 @@ app.use(cookieParser());
 
 const HTTP_PORT = process.env.HTTP_PORT;
 
+// Index Router
 app.use(
   "/",
   async (_: Request, res: Response, next: NextFunction) => {
@@ -23,6 +24,7 @@ app.use(
   require("./src/routers/index.router")
 );
 
+// Video Router
 app.use(
   "/video",
   async (_: Request, res: Response, next: NextFunction) => {
@@ -36,6 +38,7 @@ app.listen(HTTP_PORT, () => {
   console.log(`Assassin\'s Server is Running on PORT: ${HTTP_PORT}.`);
 });
 
+// CRON JOB to fetch Videos from Youtube V3 API and Save in the Database
 fetchVideosAndSaveInDatabase();
 
 module.exports = app;

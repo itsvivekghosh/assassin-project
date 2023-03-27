@@ -8,40 +8,9 @@ class VideoHelper {
   static apiUrl = process.env.YOUTUBE_API_URL;
   static maxResults = Number(process.env.MAX_FETCH_RESULTS);
 
-  static removeSpecials(str: any) {
-    try {
-      let lower = str.toLowerCase();
-      let upper = str.toUpperCase();
-
-      let res = "" as String,
-        position = 0,
-        length = lower.length,
-        tempString;
-      for (; position < length; ++position) {
-        if (
-          lower[position] !== upper[position] ||
-          lower[position].trim() === ""
-        ) {
-          tempString = str[position];
-          if (tempString !== undefined) {
-            res += tempString;
-          }
-        }
-      }
-
-      return new String(res);
-    } catch (error: any) {
-      const errorMessage = `Error while removing special characters: ${JSON.stringify(
-        error?.message
-      )}`;
-      console.error(errorMessage);
-      return {
-        status: "error",
-        message: errorMessage,
-      };
-    }
-  }
-
+  /*
+    Call the youtube API and getting the response as per documented. 
+  */
   public static async getVideoListFromYoutubeV3API(
     searchQuery: string,
     pageSize: number
@@ -72,6 +41,9 @@ class VideoHelper {
             break;
           }
         }
+      } else {
+        const errorMessage = `No API Keys, Please provide a valid GOOGLE_API_KEY`;
+        console.error(errorMessage);
       }
 
       let result: any[] = [];
@@ -101,6 +73,9 @@ class VideoHelper {
     }
   }
 
+  /*
+    Sort the response as per publishTime key and sortOrder.
+  */
   public static async getSortedResponseforYoutubeV3APIResponse(
     response: any,
     sortByOrder: string
@@ -125,6 +100,9 @@ class VideoHelper {
     }
   }
 
+  /*
+    Appending the data in the database from the response.
+  */
   public static async setYoutubeVideoResponseInDatabase(response: any) {
     try {
       let listData: any[] = [];
@@ -168,6 +146,9 @@ class VideoHelper {
     }
   }
 
+  /* 
+   Helper function to save the Data in the Database.
+  */
   static async saveDataInDatabase(VideoObjectList: any[]) {
     try {
       VideoObjectList.forEach(async (VideoObject: any) => {
@@ -201,7 +182,47 @@ class VideoHelper {
     );
   };
 
-  public static getAllVideosByAnyKeyInDescOrder = async (
+  /*
+    Removing special Characters from the given string.
+  */
+  static removeSpecials(str: any) {
+    try {
+      let lower = str.toLowerCase();
+      let upper = str.toUpperCase();
+
+      let res = "" as String,
+        position = 0,
+        length = lower.length,
+        tempString;
+      for (; position < length; ++position) {
+        if (
+          lower[position] !== upper[position] ||
+          lower[position].trim() === ""
+        ) {
+          tempString = str[position];
+          if (tempString !== undefined) {
+            res += tempString;
+          }
+        }
+      }
+
+      return new String(res);
+    } catch (error: any) {
+      const errorMessage = `Error while removing special characters: ${JSON.stringify(
+        error?.message
+      )}`;
+      console.error(errorMessage);
+      return {
+        status: "error",
+        message: errorMessage,
+      };
+    }
+  }
+
+  /*
+    Fetching all the videos as per the SortKey and SortOrder.
+  */
+  public static getAllVideosByAnyKeyInSortingOrder = async (
     pageNumber: number,
     sortByOrder: string = "desc",
     sortByKey: string = "publishTime",
@@ -233,6 +254,9 @@ class VideoHelper {
     }
   };
 
+  /*
+    Fetching all the videos from Database as per Search query in Title and Description columns.
+  */
   public static getAllVideosByTitleOrDescription = async (
     searchString: String,
     pageNumber: number,

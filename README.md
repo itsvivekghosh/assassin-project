@@ -20,13 +20,19 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 git clone https://github.com/itsvivekghosh/assassin-project.git
 ```
 
-2. Copy your API_KEY to .env file in `GOOGLE_API_KEY` variable. This can be comma seperated values such as:
+2. Copy your API_KEY to .env file in `GOOGLE_API_KEY` variable. This can be comma seperated values such as (IMPORTANT):
 
 ```
 GOOGLE_API_KEY="<GOOGLE_API_KEY1>,<GOOGLE_API_KEY2>"
 ```
 
-3. Create the database using the command:
+3. Run command
+
+```
+docker-compose up
+```
+
+4. Create the database using the command in MySQL Command Line:
 
 ```
 -- CREATE DATABASE
@@ -51,9 +57,9 @@ ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`description`);
 ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`title`);
 ```
 
-4. Install all the dependencies by `npm i` and start the application by: `npm start`.
+5. Install all the dependencies by `npm i` and start the application by: `npm start`.
 
-5. Adding the postman collection in `src/postman_collection.json`. Please import to use the APIs.
+6. Adding the postman collection in `src/postman_collection.json`. Please import to use the APIs.
 
 > **APIs:**
 >
@@ -61,4 +67,4 @@ ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`title`);
 > - `/video/getAllVideos` is the API that fetches all the videos from DB as per the sorted order, page size, page number and sortKey. Here, `sortKey` denotes the key by which the query is searched.
 > - `/video/getByTitleOrDescription` is the API that fetches the data from DB as per the search query (FUZZY SEARCH) with all the above query params.
 
-### ENJOY THE APP.
+### ENJOY THE APP

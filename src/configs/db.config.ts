@@ -7,6 +7,9 @@ const MYSQL_USERNAME = process.env.MYSQL_USERNAME;
 const MYSQL_DATABASE_NAME = process.env.MYSQL_DATABASE_NAME;
 const MYSQL_TABLE_NAME = process.env.MYSQL_TABLE_NAME;
 
+/* 
+ Creating the MySQL Database connection
+*/
 var dbConn = mysql.createConnection({
   host: MYSQL_URI,
   port: MYSQL_PORT,
@@ -14,6 +17,7 @@ var dbConn = mysql.createConnection({
   database: MYSQL_DATABASE_NAME,
 });
 
+// Connecting to MySQL Database
 dbConn.connect(function (error: any) {
   if (!!error) {
     console.log(error);

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 const videoHelper = require("../helpers/video.helper");
 
 class VideoController {
+  // checking the sortOrder query params values
   static checkTheSortOrderValueMatches(value: string) {
     if (["asc", "desc"].includes(value)) {
       return true;
@@ -10,6 +11,7 @@ class VideoController {
     return false;
   }
 
+  // checking the sortKeys query params values
   static checkTheSortKeysValueMatches(value: string) {
     if (["id", "publishedAt", "publishTime", "created_at"].includes(value)) {
       return true;
@@ -17,6 +19,7 @@ class VideoController {
     return false;
   }
 
+  // Getting the Video Details from the Youtube API.
   public static async getVideoResponse(request?: Request, response?: Response) {
     const searchParams = request?.query?.q || process.env.DEFAULT_SEARCH_VALUE;
     const sortByOrder = request?.query?.sortByOrder || "desc";
@@ -33,22 +36,26 @@ class VideoController {
       };
     }
 
+    // Getting the Video List from youtube Youtube API.
     let resp = await videoHelper.getVideoListFromYoutubeV3API(
       searchParams,
       pageSize
     );
 
+    // Paginate the Response by Page Size and Page Number
     resp = videoHelper.paginateArrayByPageSizeAndNumber(
       resp,
       pageSize,
       pageNumber
     );
 
+    // Getting the Sorted Response
     resp = await videoHelper.getSortedResponseforYoutubeV3APIResponse(
       resp,
       sortByOrder
     );
 
+    // Appending the response in Database
     await videoHelper.setYoutubeVideoResponseInDatabase(resp);
 
     return {
@@ -57,6 +64,9 @@ class VideoController {
     };
   }
 
+  /*
+    Getting the Sorted response from Database as per the sortKey and Sort Order.
+  */
   public static async getAllVideoResponse(request?: Request, _?: Response) {
     const sortByOrder = request?.query?.sortByOrder || "desc";
     const pageNumber = request?.query?.pageNumber || 1;
@@ -82,7 +92,8 @@ class VideoController {
       };
     }
 
-    let resp = await videoHelper.getAllVideosByAnyKeyInDescOrder(
+    // Getting all videos by search key in any order as pe the page size
+    let resp = await videoHelper.getAllVideosByAnyKeyInSortingOrder(
       pageNumber,
       sortByOrder,
       sortByKey,
@@ -99,6 +110,9 @@ class VideoController {
     }
   }
 
+  /*
+    Getting all the Videos by Searched Query from title or description columns
+  */
   public static async getAllVideoModelGetByTitleOrDescriptionResponse(
     request: Request,
     _: Response
