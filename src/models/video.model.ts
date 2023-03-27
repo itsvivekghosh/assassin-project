@@ -6,6 +6,9 @@ export class VideoQueries {
   private static MYSQL_DATABASE_NAME = process.env.MYSQL_DATABASE_NAME;
   private static MYSQL_TABLE_NAME = process.env.MYSQL_TABLE_NAME;
 
+  /*
+    Saving/Inserting the data in the database.
+  */
   public static VideoModelCreateQuery = async (data: typeof VideoSchemaDTO) => {
     try {
       await dbConn.query(
@@ -24,6 +27,9 @@ export class VideoQueries {
     }
   };
 
+  /* 
+    Fetching all the videos as per the search query and responding as the paginated response.
+  */
   public static getVideosByAnyKeyQueryResponse = async (
     pageNumber: number,
     pageSize: number,
@@ -58,6 +64,12 @@ export class VideoQueries {
       }
     });
   };
+
+  /*
+    Query to get all the videos from Database, where the search query lies in Description or in Title. [FUZZY SEARCH like:
+       A video with title `How to make tea?` should match for the search query `tea how`.
+    ]
+  */
   public static VideoModelGetByTitleOrDescriptionQuery = async (
     searchString: String,
     pageNumber: number,

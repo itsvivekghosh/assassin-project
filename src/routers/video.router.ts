@@ -4,6 +4,9 @@ import { STATUS_CODES } from "../constants/response.constants";
 const videoRouter = express.Router();
 const videoController = require("../controllers/video.controller");
 
+/*
+  Get data from Youtube V3 API and saving the data in Database.
+*/
 videoRouter.get("/", async (req: any, res: any) => {
   try {
     let response = await videoController.getVideoResponse(req, res);
@@ -25,6 +28,9 @@ videoRouter.get("/", async (req: any, res: any) => {
   }
 });
 
+/*
+  Fetching all the videos from database as per the pagination and page size.
+*/
 videoRouter.get("/getAllVideos", async (req: any, res: any) => {
   try {
     let response = await videoController.getAllVideoResponse(req, res);
@@ -45,6 +51,11 @@ videoRouter.get("/getAllVideos", async (req: any, res: any) => {
   }
 });
 
+/*
+  Router to Search any video in the column Title or description. [FUZZY SEARCH such as::: 
+     A video with title `How to make tea?` should match for the search query `tea how`
+  ]
+*/
 videoRouter.get("/getByTitleOrDescription", async (req: any, res: any) => {
   try {
     let response =

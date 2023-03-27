@@ -1,3 +1,4 @@
+// Status Codes Mapping
 export class STATUS_CODES {
   static OK_HTTP_RESPONSE = 200;
   static FORBIDDEN_REQUEST = 403;
@@ -6,6 +7,7 @@ export class STATUS_CODES {
   static SERVICE_UNAVAILABLE = 503;
 }
 
+// Http Request Query Params Mappings
 export enum HTTP_REQUEST_QUERY_PARAMS_KEYS {
   SORT_BY_ORDER = "sortByOrder",
   SORT_BY_KEY = "sortByKey",
