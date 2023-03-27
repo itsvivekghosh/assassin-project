@@ -79,13 +79,16 @@ export class VideoQueries {
   ) => {
     return new Promise(async (resolve, reject) => {
       try {
+        await dbConn.query(
+          `ALTER TABLE ${this.MYSQL_DATABASE_NAME}.${this.MYSQL_TABLE_NAME} ADD FULLTEXT INDEX title_desc_index (title, description);`
+        );
         const SQL_QUERY = `SELECT * from ${this.MYSQL_DATABASE_NAME}.${
           this.MYSQL_TABLE_NAME
         } as v3 INNER JOIN (SELECT v.id FROM ${this.MYSQL_DATABASE_NAME}.${
           this.MYSQL_TABLE_NAME
         } as v INNER JOIN (SELECT id from ${this.MYSQL_DATABASE_NAME}.${
           this.MYSQL_TABLE_NAME
-        } WHERE MATCH(description, title) AGAINST("${searchString}" IN NATURAL LANGUAGE MODE)) as v2 ON v.id = v2.id ORDER BY v.id desc LIMIT ${
+        } WHERE MATCH(title, description) AGAINST("${searchString}" IN NATURAL LANGUAGE MODE)) as v2 ON v.id = v2.id ORDER BY v.id desc LIMIT ${
           (pageNumber - 1) * pageSize
         }, ${pageSize}) as v4 WHERE v4.id = v3.id ORDER BY v3.${sortByKey} ${sortByOrder};`;
 

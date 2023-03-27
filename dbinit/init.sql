@@ -17,3 +17,7 @@ CREATE TABLE IF NOT EXISTS fampay_assignment.videos (
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 PRIMARY KEY (`id`))
 ENGINE=InnoDB;
+
+ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`description`);
+ALTER TABLE fampay_assignment.videos ADD FULLTEXT(`title`);
+ALTER TABLE fampay_assignment.videos ADD FULLTEXT INDEX title_desc_index (`title`, `description`);
